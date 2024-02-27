@@ -19,7 +19,6 @@ const NavBar = (props) => {
   };
 
   const handleNavItemClick = () => {
-    // Close the Navbar when a link is clicked
     setIsNavbarExpanded(false);
   };
   

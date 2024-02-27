@@ -4,127 +4,142 @@ import AuthContext from "../../authCtx/auth-context";
 import axios from "axios";
 
 const CartProvider = (props) => {
-    // State to hold cart items
-    const [items, updatedItems] = useState([]);
-    const authCtx = useContext(AuthContext);
-    const useremail = authCtx.email;
-    const isLoggedIn = authCtx.isLoggedIn;
+  const [items, setItems] = useState([]);
+  const [products, setProducts] = useState([]);
+  const authCtx = useContext(AuthContext);
+  const useremail = authCtx.email;
+  const isLoggedIn = authCtx.isLoggedIn;
+  const firebaseURL = 'https://shoppy-8c801-default-rtdb.firebaseio.com/';
 
-    // Function to fetch cart items from the server
-    const getItems = async () => {
-        try {
-            // Replace with your server endpoint
-            const response = await axios.get(`https://shoppy-8c801-default-rtdb.firebaseio.com/${useremail}.json`);
-            
-            updatedItems(response.data);
-            
-        } catch (error) {
-            console.error('Error retrieving cart items:', error);
-        }
+  const addProduct = () => {
+    fetchProducts();
+  };
+  const fetchProducts = async () => {
+    try {
+      const res = await axios.get(`${firebaseURL}/products/${useremail}.json`);
+      if (res.status === 200) {
+        const data = await res.data;
+
+        const productsArray = Object.entries(data).map(([key, product]) => ({
+          key: key,
+          ...product
+        }));
+
+        setProducts((prevProducts) => [...prevProducts, ...productsArray]);
+
+
+      } else {
+        console.error('Error fetching data:', res.statusText);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error.message);
     }
+  };
 
-    // Load cart items from localStorage when the component is mounted
-    useEffect(() => {
-        const storedItems = localStorage.getItem('cartItems');
-        if (storedItems) {
-            updatedItems(JSON.parse(storedItems));
-        }
-    }, []);
 
-    // Handle the logic when user logs in or out
-    useEffect(() => {
-        if (isLoggedIn) {
-            // User is logged in, make the request to get cart items
-            getItems();
-        } else {
-            // User is logged out, clear the cart items
-            updatedItems([]);
-        }
-    }, [isLoggedIn]);
+  const getItems = async () => {
+    try {
+      const response = await axios.get(
+        `https://shoppy-8c801-default-rtdb.firebaseio.com/cart/${useremail}.json`
+      );
 
-    // Save cart items to localStorage whenever they change
-    useEffect(() => {
-        localStorage.setItem('cartItems', JSON.stringify(items));
-    }, [items]);
 
-    // Function to add an item to the cart
-    const addItemHandler = async (item) => {
-     
-        const updatedItemsArray = [...items];
-        let url = `https://shoppy-8c801-default-rtdb.firebaseio.com/${useremail}.json`;
-      
-        // Check if an item with the same title already exists in the cart
-        const existingItemIndex = updatedItemsArray.findIndex(
-          (existingItem) => existingItem.title === item.title
-        );
-      
-        if (existingItemIndex !== -1) {
-          // If the item already exists, update the quantity in the cart state
-          updatedItemsArray[existingItemIndex].quantity += Number(item.quantity);
-      
-          try {
-            // Update the item's quantity on the server
-            const itemIdToUpdate = updatedItemsArray[existingItemIndex]._id; // Assuming _id is the unique identifier for items on the server
-            const updatedItem = {
-              title:item.title,
-              imageUrl:item.imageUrl,
-              price:item.price,
-              quantity: updatedItemsArray[existingItemIndex].quantity
-            };
-      
-            // Make a PUT request to replace the item on the server with the updated quantity
-            await axios.put(`${url}/${itemIdToUpdate}`, updatedItem);
-      
-            // Update the cart state
-            
-          } catch (error) {
-            console.error("Error updating item:", error);
-          }
-        } else {
-          try {
-            // Make a POST request to add the item to the server
-            const res = await axios.post(url, item);
-      
-            // Add the item to the cart state
-            updatedItemsArray.push(res.data);
-      
-            // Update the cart state
-            
-          } catch (error) {
-            console.error("Error adding item:", error);
-          }
-        }
-        updatedItems(updatedItemsArray);
-      };
-      
-    // Function to remove an item from the cart
-    const removeItemHandler = async (id) => {
-        try {
-            // Make a DELETE request to remove the item from the server
-            await axios.delete(`https://shoppy-8c801-default-rtdb.firebaseio.com/${useremail}/${id}.json`);
+      const itemsArray = Object.entries(response.data || {}).map(([key, value]) => {
+        return { _id: key, ...value };
+      });
 
-            // Update the cart state by filtering out the deleted item
-            const updatedItemsArray = items.filter((item) => item._id !== id);
-            updatedItems(updatedItemsArray);
-        } catch (error) {
-            // Handle errors
-            console.error("Error deleting cart item:", error);
-        }
-    };
-
-    // Cart context with items and handler functions
-    const cartContext = {
-        items: items,
-        addItem: addItemHandler,
-        removeItem: removeItemHandler
+      setItems(itemsArray);
+    } catch (error) {
+      console.error("Error retrieving cart items:", error);
     }
+  };
 
-    // Provide the cart context to child components
-    return (
-        <CartContext.Provider value={cartContext}>
-            {props.children}
-        </CartContext.Provider>
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      getItems();
+
+    } else {
+      setItems([]);
+    }
+  }, []);
+
+  const addItemHandler = async (item) => {
+
+    const updatedItemsArray = [...items];
+
+    const url = `https://shoppy-8c801-default-rtdb.firebaseio.com/cart/${useremail}.json`;
+
+    const existingItemIndex = updatedItemsArray.findIndex(
+      (existingItem) => existingItem.title === item.title
     );
-}
+
+    if (existingItemIndex !== -1) {
+      updatedItemsArray[existingItemIndex].quantity += parseInt(item.quantity, 10);
+
+      try {
+        const itemIdToUpdate = updatedItemsArray[existingItemIndex]._id;
+        const updatedItem = {
+          title: item.title,
+          imageUrl: item.imageUrl,
+          price: item.price,
+          quantity: updatedItemsArray[existingItemIndex].quantity,
+        };
+
+        await axios.put(`https://shoppy-8c801-default-rtdb.firebaseio.com/cart/${useremail}/${itemIdToUpdate}.json`, updatedItem);
+        getItems();
+      } catch (error) {
+        console.error("Error updating item:", error);
+      }
+    } else {
+      try {
+        const res = await axios.post(url, item);
+        getItems();
+      } catch (error) {
+        console.error("Error adding item:", error);
+      }
+    }
+    setItems(updatedItemsArray);
+  };
+
+  const removeItemHandler = async (id) => {
+    try {
+      await axios.delete(
+        `https://shoppy-8c801-default-rtdb.firebaseio.com/cart/${useremail}/${id}.json`
+      );
+
+      const updatedItems = Object.values(items);
+      const updatedItemsArray = updatedItems.filter((item) => item._id !== id);
+      setItems(updatedItemsArray);
+    } catch (error) {
+      console.error("Error deleting cart item:", error);
+    }
+  };
+
+  const removeAll = async () => {
+    try {
+      await axios.delete(`https://shoppy-8c801-default-rtdb.firebaseio.com/cart/${useremail}.json`);
+      setItems([]);
+    } catch (error) {
+
+      console.error("Error deleting all cart items:", error);
+    }
+  };
+
+  const cartContext = {
+    products: products,
+    items: items,
+    addItem: addItemHandler,
+    removeItem: removeItemHandler,
+    addProduct: addProduct,
+    removeAll: removeAll
+  };
+
+  return (
+    <CartContext.Provider value={cartContext}>
+      {props.children}
+    </CartContext.Provider>
+  );
+};
 
 export default CartProvider;

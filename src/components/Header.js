@@ -7,7 +7,7 @@ const Header = () => {
       <Container>
         <Row>
           <Col>
-            <h1 className="font-weight-bolder display-1 my-5">The Generics</h1>
+            <h1 className="font-weight-bolder display-1 my-5">Shoppy</h1>
           </Col>
         </Row>
       </Container>

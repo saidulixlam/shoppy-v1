@@ -2,17 +2,24 @@ import { Button } from "react-bootstrap";
 import React, { useContext } from "react";
 import { Container, Table } from "react-bootstrap";
 import CartContext from "../store/cart-context";
+import { useHistory } from "react-router-dom";
 
 const Cart = () => {
-    const ctx = useContext(CartContext);
-
-    const productsArr = ctx.items;
+    const history=useHistory();
+    const ctx=useContext(CartContext);
+    const cartItems = ctx.items;
 
     let totAmount = 0;
-    if(productsArr){
-        productsArr.forEach((item) => {
+    if(cartItems){
+        cartItems.forEach((item) => {
             totAmount += item.quantity*item.price;
         })
+    }
+    function purchaseHandler() {
+        ctx.removeAll();
+        alert("Your order is placed!!! Your total is: $" + totAmount);
+        history.push('./home');
+        
     }
 
     return (
@@ -28,8 +35,8 @@ const Cart = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {productsArr && productsArr.map((item) => (
-                            <tr key={item.title}>
+                    {Array.isArray(cartItems) && cartItems.map((item,index) => (
+                            <tr key={index}>
                                 <td className="d-flex">
                                     <img src={item.imageUrl} alt="Albums" width="50" height="50" />
                                     {item.title}
@@ -54,7 +61,7 @@ const Cart = () => {
 
             {/* Purchase Button */}
             <div className="text-center">
-                <Button variant="primary">PURCHASE</Button>
+                <Button onClick={purchaseHandler} variant="primary">PURCHASE</Button>
             </div>
         </Container>
     );

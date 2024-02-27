@@ -1,17 +1,21 @@
 import { Card, Col, Button } from "react-bootstrap";
 import './ProductDipaly.css'
+import React, { lazy, Suspense } from 'react';
 import { useContext } from "react";
 import CartContext from "../store/cart-context";
 import { Link } from "react-router-dom";
+
+const LazyLoadedImage = lazy(() => import('./LazyLoadImage'));
 
 const ProductDisplay = (props) => {
     const ctx = useContext(CartContext);
 
     const item = {
+        id: props.id,
         title: props.title,
         imageUrl: props.imageUrl,
         price: props.price,
-        quantity:Number(1)
+        quantity: Number(1)
     }
 
     function addToCartHandler(e) {
@@ -24,16 +28,9 @@ const ProductDisplay = (props) => {
             <Card style={{ width: '16rem', border: 'none' }}>
                 <h3 className="text-center my-4">{props.title}</h3>
                 <Link to={`/product/${props.title}`}>
-                    <Card.Img
-                        variant="top"
-                        src={props.imageUrl}
-                        style={{
-                            animation: 'enlargeAndMove 2s ease-in-out infinite alternate',
-                            transformOrigin: 'center',
-                        }}
-                        className="imageStyle"
-                       
-                    />
+                    <Suspense fallback={<div className="text-dark text-center">Loading...</div>}>
+                        <LazyLoadedImage imageUrl={props.imageUrl} />
+                    </Suspense>
                 </Link>
 
                 <Card.Body className="d-flex flex-column justify-content-center">

@@ -1,4 +1,9 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
+import axios from 'axios';
+import AuthContext from '../../authCtx/auth-context';
+import { imagedDb } from '../Firebase/Config';
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import CartContext from '../store/cart-context';
 
 const AddProduct = () => {
     const [productName, setProductName] = useState('');
@@ -6,10 +11,14 @@ const AddProduct = () => {
     const [productImage, setProductImage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
 
+    const firebaseURL = 'https://shoppy-8c801-default-rtdb.firebaseio.com';
+    const authCtx = useContext(AuthContext);
+    const cartctx = useContext(CartContext);
+    const useremail = authCtx.email;
+
     const handleProductImageChange = (e) => {
         const file = e.target.files[0];
 
-        // Validate image file format
         if (file && !['image/png', 'image/jpeg', 'image/jpg'].includes(file.type)) {
             setErrorMessage('Invalid image format. Please select a valid image (PNG, JPEG, JPG).');
         } else {
@@ -18,30 +27,50 @@ const AddProduct = () => {
         }
     };
 
-    const handleFormSubmit = (e) => {
+    const handleFormSubmit = async (e) => {
         e.preventDefault();
 
-        // Check if all fields are filled
         if (!productName || !productPrice || !productImage) {
             setErrorMessage('Please fill in all fields.');
             return;
         }
 
-        // Process the form data (you can send it to the server or handle it as needed)
-        console.log('Product Name:', productName);
-        console.log('Product Price:', productPrice);
-        console.log('Product Image:', productImage);
+        try {
+            const storageRef = ref(imagedDb, `productImages/${productImage.name}`);
+            await uploadBytes(storageRef, productImage);
 
-        // Reset the form after submission
+            const imageUrl = await getDownloadURL(storageRef);
+
+            const userData = {
+                productName: productName,
+                productPrice: productPrice,
+                productImage: imageUrl,
+            };
+
+            const res = await axios.post(
+                `${firebaseURL}/products/${useremail}.json`,
+                userData
+            );
+
+            if (res.status !== 200 && res.status !== 201) {
+                throw new Error('Something went wrong');
+            }
+
+            alert('Product added successfully');
+
+        } catch (error) {
+            console.error('Error submitting form:', error.message);
+        }
         setProductName('');
         setProductPrice('');
         setProductImage('');
         setErrorMessage('');
     };
 
+
     return (
         <div className="container text-light">
-            <h2>Add Products</h2>
+            <h2 className='text-center text-dark'>Add Products</h2>
             <form onSubmit={handleFormSubmit}>
                 <div className="mb-3">
                     <label htmlFor="productName" className="form-label">Product Name</label>

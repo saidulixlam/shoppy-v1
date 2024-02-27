@@ -1,16 +1,15 @@
 import React, { Fragment, useContext } from "react";
 import { Container, Button, Card, Row, Col } from "react-bootstrap";
 import { useHistory, useParams } from "react-router-dom";
-import { productArray } from "./ProductArray";
 import CartContext from "../store/cart-context";
 
 const ProductDetails = () => {
   const history = useHistory();
   const ctx = useContext(CartContext);
   const { productId } = useParams();
-  const productsArr = productArray;
+  const productArray = ctx.products;
 
-  const product = productsArr.find((elem) => elem.title === productId);
+  const product = productArray.find((elem) => elem.productName === productId);
 
   function buynowHandler(e) {
     e.preventDefault();
@@ -19,14 +18,14 @@ const ProductDetails = () => {
 
   return (
     <Fragment>
-      <h1 className="mb-4 my-6 p-4 bg-light shadow text-center">{product.title}</h1>
+      <h1 className="mb-4 my-6 p-4 bg-light shadow text-center">{product.productName}</h1>
       <Container className="my-3">
         <Row>
           {/* Product Images Section */}
           <Col xs={12} md={6} lg={4} className="mb-4">
             <Card.Img
               variant="top"
-              src={product.imageUrl}
+              src={product.productImage}
               className="imageStyle rounded"
             />
           </Col>
@@ -40,7 +39,7 @@ const ProductDetails = () => {
               {/* Add more description items */}
             </ul>
             <div>
-              <h3 className="p-3 bg-info shadow rounded">Price: ${product.price}</h3>
+              <h3 className="p-3 bg-info shadow rounded">Price: ${product.productPrice}</h3>
               <div className="d-flex gap-2 my-4">
                 <Button
                   variant="primary"

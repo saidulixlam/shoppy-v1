@@ -1,41 +1,41 @@
 export const productArray=[
     {
 
-        title: 'Album 1',
+        productName: 'Album 1',
 
-        price: 100,
+        productPrice: 100,
 
-        imageUrl: 'https://prasadyash2411.github.io/ecom-website/img/Album%201.png',
-
-    },
-
-    {
-
-        title: 'Album 2',
-
-        price: 50,
-
-        imageUrl: 'https://prasadyash2411.github.io/ecom-website/img/Album%202.png',
+        productImage: 'https://prasadyash2411.github.io/ecom-website/img/Album%201.png',
 
     },
 
     {
 
-        title: 'Album 3',
+        productName: 'Album 2',
 
-        price: 70,
+        productPrice: 50,
 
-        imageUrl: 'https://prasadyash2411.github.io/ecom-website/img/Album%203.png',
+        productImage: 'https://prasadyash2411.github.io/ecom-website/img/Album%202.png',
 
     },
 
     {
 
-        title: 'Album 4',
+        productName: 'Album 3',
 
-        price: 125,
+        productPrice: 70,
 
-        imageUrl: 'https://prasadyash2411.github.io/ecom-website/img/Album%204.png',
+        productImage: 'https://prasadyash2411.github.io/ecom-website/img/Album%203.png',
+
+    },
+
+    {
+
+        productName: 'Album 4',
+
+        productPrice: 125,
+
+        productImage: 'https://prasadyash2411.github.io/ecom-website/img/Album%204.png',
 
     }
 

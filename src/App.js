@@ -62,7 +62,6 @@ const App = () => {
       <CartProvider>
         <NavBar onClick={cartHandler} />
         <Header />
-        {/* Use Routes with Route components */}
         <Switch>
           <Route path="/about" ><About /></Route>
           <Route path="/login" exact><Login /></Route>
@@ -71,7 +70,7 @@ const App = () => {
           <Route path="/contact" ><ContactUs onAddUser={adduserHandler} /></Route>
           <Route path="/home" ><Home /></Route>
           <Route path="/product/:productId" ><ProductDetails /></Route>
-          <Route path="/cart" ><Cart/></Route>
+          <Route path="/cart" ><Cart /></Route>
         </Switch>
 
         <div style={backdropStyle} onClick={closeCart}></div>
